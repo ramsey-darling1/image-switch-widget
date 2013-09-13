@@ -29,20 +29,44 @@ class image_switch_widget extends WP_Widget {
 	function __construct() {
 		parent::__construct(
 			'image_switch_widget', // Base ID
-			'image_switch_widget', // Name
+			'Image Switch Widget', // Name
 			array( 'description' => __( 'A simple Image Widget that displays a new image on each page load', 'text_domain' ), ) // Args
 		);
 	}
 	
 	public function widget($args, $instance) {
 		//display the widget
-		$title = apply_filters( 'widget_title', $instance['title'] );
-
-		echo $args['before_widget'];
-		if ( ! empty( $title ) )
-			echo $args['before_title'] . $title . $args['after_title'];
-		echo __( 'Hello, World!', 'text_domain' );
-		echo $args['after_widget'];
+		//first thing we need to do is grab every image from a certain folder.
+		if(is_dir('/image_switch/')){
+			echo 'it is a directory dammit';
+		}else{
+			echo 'shit.';
+		}
+		
+		
+		
+		$imgs = '/wp-content/plugins/image_switch_widget/image_switch/*.*';
+		
+		
+		
+		print_r(glob($imgs));
+		
+		foreach(glob($imgs) as $image){
+			
+			echo $image;
+			if(preg_match('/jpg/') or preg_match('/png/') or preg_match('/jpeg/') or preg_match('/JPG/') or preg_match('/PNG/')){
+				$images[] = $image;
+			}
+		}
+		
+		if(isset($images)){
+			if(!empty($images)){
+				$random_key = array_rand($images);
+				
+				echo '<img src="'.$images[$random_key].'" alt="Random Image" />';
+			}
+		}
+		
 		
 	}
 	
