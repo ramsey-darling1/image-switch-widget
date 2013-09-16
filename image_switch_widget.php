@@ -37,33 +37,24 @@ class image_switch_widget extends WP_Widget {
 	public function widget($args, $instance) {
 		//display the widget
 		//first thing we need to do is grab every image from a certain folder.
-		if(is_dir('/image_switch/')){
-			echo 'it is a directory dammit';
-		}else{
-			echo 'shit.';
-		}
 		
+		$imgs = 'wp-content/plugins/image_switch_widget/image_switch/*.*';
 		
-		
-		$imgs = '/wp-content/plugins/image_switch_widget/image_switch/*.*';
-		
-		
-		
-		print_r(glob($imgs));
+		//print_r(glob($imgs));
 		
 		foreach(glob($imgs) as $image){
-			
-			echo $image;
-			if(preg_match('/jpg/') or preg_match('/png/') or preg_match('/jpeg/') or preg_match('/JPG/') or preg_match('/PNG/')){
+			//here we make sure that the file in the directory is an image
+			if(preg_match('/jpg/',$image) or preg_match('/png/',$image) or preg_match('/jpeg/',$image) or preg_match('/JPG/',$image) or preg_match('/PNG/',$image)){
+				//add the images to an array
 				$images[] = $image;
 			}
 		}
-		
+	
 		if(isset($images)){
 			if(!empty($images)){
-				$random_key = array_rand($images);
-				
-				echo '<img src="'.$images[$random_key].'" alt="Random Image" />';
+				$random_key = array_rand($images);//pick an image from the array at random
+				//display the image
+				echo '<img src="/'.$images[$random_key].'" alt="Random Image" />';
 			}
 		}
 		
