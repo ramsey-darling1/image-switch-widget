@@ -3,7 +3,7 @@
  * Plugin Name: Image Switch Widget
  * Plugin URI: none
  * Description: A simple image widget that displays a new image on each page load
- * Version: 1.0
+ * Version: 2.0
  * Author: Ramsey Darling
  * Author URI: http://vcwebdesign.com
  * License: free
@@ -17,7 +17,8 @@
  **/
 
  
-add_action( 'widgets_init', 'register_image_switch_widget' );    
+add_action( 'widgets_init', 'register_image_switch_widget' );
+
 
 // register the widget  
 function register_image_switch_widget() {
@@ -66,7 +67,10 @@ class image_switch_widget extends WP_Widget {
 		$instance = array();
 		$instance['title'] = ( ! empty( $new_instance['title'] ) ) ? strip_tags( $new_instance['title'] ) : '';
 
+
+
 		return $instance;
+
 		
 	}
 	
@@ -82,7 +86,16 @@ class image_switch_widget extends WP_Widget {
 		echo '<input class="widefat" id="'.$this->get_field_id( 'title' ).'" name="'.$this->get_field_name( 'title' ).'" type="text" value="'.esc_attr( $title ).' " />';
 		echo '</p>';
 		
+		
 	}
 
-}     
+}
+
+/**
+ *Admin Options Interface
+ *
+ *instead of doing everything in the widget, we are going to create an admin interface
+ */
+
+      
 
