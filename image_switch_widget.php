@@ -3,7 +3,7 @@
  * Plugin Name: Image Switch Widget
  * Plugin URI: none
  * Description: A simple image widget that displays a new image on each page load
- * Version: 2.0
+ * Version: 2.1
  * Author: Ramsey Darling
  * Author URI: http://vcwebdesign.com
  * License: free
@@ -40,25 +40,24 @@ class image_switch_widget extends WP_Widget {
 	
 	public function widget($args, $instance) {
 		//display the widget
-		//first thing we need to do is grab every image from a certain folder.
+		//first thing we need to do is grab every image that we can from the database.
+		global $wpdb;
 		
-		$imgs = 'wp-content/plugins/image_switch_widget/image_switch/*.*';
-		
-		//print_r(glob($imgs));
-		
-		foreach(glob($imgs) as $image){
-			//here we make sure that the file in the directory is an image
-			if(preg_match('/jpg/',$image) or preg_match('/png/',$image) or preg_match('/jpeg/',$image) or preg_match('/JPG/',$image) or preg_match('/PNG/',$image)){
-				//add the images to an array
-				$images[] = $image;
-			}
+		$table_name = $wpdb->prefix.'image_switch';
+		$dig = "SELECT * FROM {$table_name}";
+		$current_images = $wpdb->get_results($dig,ARRAY_A);
+
+
+		foreach($current_images as $image){
+			//add the images to an array
+			$images[] = $image['url'];
 		}
 	
 		if(isset($images)){
 			if(!empty($images)){
 				$random_key = array_rand($images);//pick an image from the array at random
 				//display the image
-				echo '<img src="/'.$images[$random_key].'" alt="Random Image" />';
+				echo '<img src="'.$images[$random_key].'" alt="Random Image" />';
 			}
 		}
 		
@@ -124,11 +123,11 @@ function admin_display(){
 	}
 
 	echo '<h1>Image Switch</h1>';
-	echo '<p>Upload a New Image:</p>';
+	echo '<p>Upload a New Image:</p><p><em>Images are not sized, please make sure the image you are uploading is the size you want it to be before uploading</em></p>';
 	echo '<form method="post" enctype="multipart/form-data"  action="">';
 	echo '<input type="file" name="image_switch_images" id="image_switch_images" multiple />';
 	echo '<input type="hidden" name="image_switch_action" value="'.$_SESSION['image_switch_instance_id'].'" />';
-	echo '<input type="submit" value="Upload" />';
+	echo '<input type="submit" value="Upload" class="image_switch_button" />';
 	echo '</form>';
 
 	//upload image
@@ -152,7 +151,7 @@ function admin_display(){
 					);
 				$wpdb->insert($table_name,$image_data);
 
-			    echo '<div class="image_switch_sucess">File is valid, and was successfully uploaded.</div>';
+			    echo '<div class="image_switch_success">File is valid, and was successfully uploaded.</div>';
 			    //var_dump( $movefile);
 			} else {
 			    echo '<div class="image_switch_error">Sorry, we were not able to upload your images at this time.</div>';
@@ -170,10 +169,19 @@ function admin_display(){
 	$dig = "SELECT * FROM {$table_name}";
 	$current_images = $wpdb->get_results($dig,ARRAY_A);
 	foreach ($current_images as $image) {
-		echo '<img src="'.$image['url'].'" alt="Image Switch Image" class="image_switch_left" />';
+		echo '<div class="image_switch_image_div"><img src="'.$image['url'].'" alt="Image Switch Image" class="image_switch_left" />';
+		echo '<div class="image_switch_hidden"><form method="post" action="">';
+		echo '<input type="hidden" name="remove_image_id" value="'.$image['id'].'" />';
+		echo '<input type="submit" value="Remove" class="image_switch_button" />';
+		echo '</form></div></div>';
 	}
 
 	echo '<p class="image_switch_brick"></p></div>';
+
+	//delete images
+	if(isset($_POST['remove_image_id'])){
+		$wpdb->delete($table_name,array('id' => $_POST['remove_image_id']));
+	}
 	
 }
 
@@ -202,9 +210,21 @@ function image_switch_install(){
 	dbDelta( $sql );
 
 	//version specific options and update functionality
-	$current_version = "2.0";
+	$current_version = "2.1";
 
 	add_option("image_switch_db_version", $current_version);
+
+	$installed_version = get_option( "image_switch_db_version" );
+
+	if($installed_version != $current_version){
+		//update the database
+		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+  		dbDelta( $sql );
+
+  		update_option( "image_switch_db_version", $current_version );
+		
+
+	}
 
 }
 

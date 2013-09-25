@@ -17,10 +17,34 @@
 	border-radius: 10px;
 }
 
-.image_switch_left {
-	float: left;
-}
 
 .image_switch_brick {
 	clear: both;
+}
+
+.image_switch_image_div {
+	padding: 10px;
+	position: relative;
+	float: left;
+}
+
+.image_switch_hidden {
+	position: absolute;
+	visibility: hidden;
+	left: 12px;
+	bottom: 14px;
+}
+
+.image_switch_image_div:hover .image_switch_hidden {
+	visibility: visible;
+}
+
+.image_switch_button {
+	padding: 10px;
+	color: #fff;
+	background: #333;
+	background: rgba(0,0,0,0.8);
+	border-radius: 5px;
+	border: 1px solid #fff;
+	cursor: pointer;
 }
