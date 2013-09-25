@@ -1,0 +1,26 @@
+/**
+ *Stylesheet for Image Switch Widget
+ *@rdarling
+ */
+
+.image_switch_success {
+	background: green;
+	color: white;
+	padding: 20px;
+	border-radius: 10px;
+}
+
+.image_switch_error {
+	background: red;
+	color: white;
+	padding: 20px;
+	border-radius: 10px;
+}
+
+.image_switch_left {
+	float: left;
+}
+
+.image_switch_brick {
+	clear: both;
+}

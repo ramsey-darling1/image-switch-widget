@@ -16,8 +16,11 @@
  *the best things in life are free, do whatever you want with it
  **/
 
- 
+session_start();
+
+
 add_action( 'widgets_init', 'register_image_switch_widget' );
+
 
 
 // register the widget  
@@ -97,5 +100,112 @@ class image_switch_widget extends WP_Widget {
  *instead of doing everything in the widget, we are going to create an admin interface
  */
 
-      
+//add wp admin interface
+add_action('admin_menu','image_switch_admin');
+
+
+//add styles
+wp_enqueue_style('image_switch-styles', plugins_url('image_switch_css/image_switch.css',__FILE__));
+
+function image_switch_admin(){
+    add_menu_page( 'Image Switch', 'Image Switch', 'manage_options', 'imageswitchadmin', 'admin_display' );
+}
+
+function admin_display(){
+
+	if ( !current_user_can( 'manage_options' ) )  {
+		wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
+	}
+
+	global $wpdb;
+
+	if(!$_SESSION['image_switch_instance_id']){
+		$_SESSION['image_switch_instance_id'] = uniqid(date('mdy'));
+	}
+
+	echo '<h1>Image Switch</h1>';
+	echo '<p>Upload a New Image:</p>';
+	echo '<form method="post" enctype="multipart/form-data"  action="">';
+	echo '<input type="file" name="image_switch_images" id="image_switch_images" multiple />';
+	echo '<input type="hidden" name="image_switch_action" value="'.$_SESSION['image_switch_instance_id'].'" />';
+	echo '<input type="submit" value="Upload" />';
+	echo '</form>';
+
+	//upload image
+	if(isset($_POST['image_switch_action'])){
+		if($_POST['image_switch_action'] == $_SESSION['image_switch_instance_id']){
+			//we have made sure that a logged in user is the one submiting the form
+			//now upload the image
+			if ( ! function_exists( 'wp_handle_upload' ) ) require_once( ABSPATH . 'wp-admin/includes/file.php' );
+			$uploadedfile = $_FILES['image_switch_images'];
+			$upload_overrides = array( 'test_form' => false );
+			$movefile = wp_handle_upload( $uploadedfile, $upload_overrides );
+			if ( $movefile ) {
+				//the image was successfully uploaded. 
+				//save the file path in the database
+				$table_name = $wpdb->prefix.'image_switch';
+				$image_data = array(
+					'time' => time(),
+					'name' => 'Image Switch Image',
+					'isw_id' => $_SESSION['image_switch_instance_id'],
+					'url' => $movefile['url']
+					);
+				$wpdb->insert($table_name,$image_data);
+
+			    echo '<div class="image_switch_sucess">File is valid, and was successfully uploaded.</div>';
+			    //var_dump( $movefile);
+			} else {
+			    echo '<div class="image_switch_error">Sorry, we were not able to upload your images at this time.</div>';
+			}
+
+			
+		}
+	}
+
+	echo '<div id="image_switch_admin_image_area">';
+	echo '<h2>Current Images in Use</h2>';
+	echo '<p>Random image displayed by the widget will be selected from these images:</p>';
+
+	$table_name = $wpdb->prefix.'image_switch';
+	$dig = "SELECT * FROM {$table_name}";
+	$current_images = $wpdb->get_results($dig,ARRAY_A);
+	foreach ($current_images as $image) {
+		echo '<img src="'.$image['url'].'" alt="Image Switch Image" class="image_switch_left" />';
+	}
+
+	echo '<p class="image_switch_brick"></p></div>';
+	
+}
+
+/**
+ *Database Table Creation on Install
+ *
+ */
+
+register_activation_hook( __FILE__, 'image_switch_install' );
+
+function image_switch_install(){
+	
+	global $wpdb;
+
+	$table_name = $wpdb->prefix.'image_switch';
+	$sql = "CREATE TABLE $table_name (
+	  id mediumint(9) NOT NULL AUTO_INCREMENT,
+	  time datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+	  name tinytext NOT NULL,
+	  isw_id VARCHAR(20) NOT NULL,
+	  url VARCHAR(555) DEFAULT '' NOT NULL,
+	  UNIQUE KEY id (id)
+	);";
+
+	require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+	dbDelta( $sql );
+
+	//version specific options and update functionality
+	$current_version = "2.0";
+
+	add_option("image_switch_db_version", $current_version);
+
+}
+
 
