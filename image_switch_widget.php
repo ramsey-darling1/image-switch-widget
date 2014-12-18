@@ -12,7 +12,7 @@
  
 /**
  *this widget will display a new image each time the page is refreshed.
- *kinda old school, but some clients are kinda old school
+ *kinda old school, but whatever
  *the best things in life are free, do whatever you want with it
  **/
 
